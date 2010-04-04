@@ -41,3 +41,21 @@ class String
     self == downcase
   end
 end
+
+class Point
+  include Definable
+  def initialize(*args);end
+end
+class Midpoint < Point
+  def initialize(*args);end
+end
+class Line
+  include Definable
+  def initialize(*args);end
+end
+class ParallelLine<Line
+  def initialize(*args);end
+end
+class PerpendicularLine<Line
+  def initialize(*args);end
+end

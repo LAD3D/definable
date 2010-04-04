@@ -1,9 +1,9 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
-describe Constructable do
+describe Definable::Constructable do
   before(:each) do
     @class =  Class.new do
-                include Constructable
+                include Definable::Constructable
               end
     @expected_arguments = [String, [Fixnum, :fixnum], [Fixnum, :another]]
     @class.expected_arguments = @expected_arguments
@@ -22,8 +22,8 @@ describe Constructable do
 
     it "should make the class extend Constructable::ClassMethods" do
       klazz = Class.new
-      klazz.should_receive(:extend).with(Constructable::ClassMethods)
-      klazz.send :include, Constructable
+      klazz.should_receive(:extend).with(Definable::Constructable::ClassMethods)
+      klazz.send :include, Definable::Constructable
     end
 
     it "should raise an error if retrieve_test fails" do

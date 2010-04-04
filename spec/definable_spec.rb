@@ -49,7 +49,7 @@ describe Definable do
   it "should call completed_by when one definition gets complete" do
     @definable.should_receive(:completed_by).with(@definable.definitions[0])
     @definable.add_object Point.new
-    @definable.add_object AffinePoint.new(["0", :x],["10", :y],["20", :z])
+    @definable.add_object Class.new(Point).new
   end
 
   it "should add added object to dependencies if it is added" do
@@ -79,13 +79,12 @@ describe Definable do
   end
 
   it "should force the target to include Constructable" do
-    Midpoint.should include(::Constructable)
+    Midpoint.should include(Definable::Constructable)
   end
 
   it "should call add_object in the parameter if there is no definition" do
     @definable.should_receive(:add_object).once.with(@definable)
     @definable.add_object @definable
   end
-
 end
 

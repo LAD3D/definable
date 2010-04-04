@@ -34,8 +34,6 @@ module Definable
   end
 
   def complete?
-    #TODO Mirar definición de completo para puntos.
-    #TODO completo es o punto afín o objecto definido con parámetros completos.
     @proper_definition
   end
 
@@ -49,7 +47,7 @@ module Definable
   module ClassMethods
 
     def definition(args)
-      self.add_definition(Definition.from_args(args))
+      self.add_definition(::Definable::Definition.from_args(args))
     end
 
     def add_definition(definition)
@@ -80,4 +78,16 @@ module Definable
       end     
     end
   end
+end
+
+# Setting up.
+ROOT_DIR= File.join(File.dirname(__FILE__), 'definable')
+
+require File.join(ROOT_DIR, 'helpers', 'array.rb')
+
+module Definable
+  
+  #autoloads
+  autoload :Constructable, File.join(ROOT_DIR, 'constructable.rb')
+  autoload :Definition, File.join(ROOT_DIR, 'definition.rb')
 end
