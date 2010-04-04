@@ -5,12 +5,11 @@ require 'metric_fu'
 begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
-    gem.name = "om2ec"
-    gem.summary = %Q{Traductor de OM a formato más usable.}
+    gem.name = "definable"
+    gem.summary = %Q{Cosa rara.}
     gem.description = %Q{TODO: longer description of your gem}
     gem.email = "serabe@gmail.com"
     gem.authors = ["Sergio Arbeo"]
-    gem.add_dependency "nokogiri", ">= 1.4"
     gem.add_development_dependency "rspec", ">= 1.2.9"
     gem.add_development_dependency "cucumber", ">= 0"
     gem.add_development_dependency "metric_fu", ">= 0"
@@ -52,7 +51,7 @@ Rake::RDocTask.new do |rdoc|
   version = File.exist?('VERSION') ? File.read('VERSION') : ""
 
   rdoc.rdoc_dir = 'rdoc'
-  rdoc.title = "om2ec #{version}"
+  rdoc.title = "definable #{version}"
   rdoc.rdoc_files.include('README*')
   rdoc.rdoc_files.include('lib/**/*.rb')
 end

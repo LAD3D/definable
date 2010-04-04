@@ -1,18 +1,8 @@
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
-require 'om2ec'
+require 'definable'
 require 'spec'
 require 'spec/autorun'
-
-ASSETS_DIR = File.join(File.dirname(__FILE__), 'assets')
-
-class << ASSETS_DIR
-  Dir.glob(File.join(ASSETS_DIR, '**', '*.xml')).each do |file|
-     define_method file.gsub(ASSETS_DIR+File::SEPARATOR, '').gsub(File::SEPARATOR, '_').gsub('.xml', '') do
-       file
-     end
-  end
-end
 
 Spec::Runner.configure do |config|
   
@@ -33,35 +23,6 @@ Spec::Matchers.define :contain do |value|
 
   description do
     "expect a container of #{value}"
-  end
-end
-
-shared_examples_for "a bound point" do
-  
-  it "should be bound" do
-    @set.should be_bound
-  end
-  
-  it "should not be free" do
-    @set.should_not be_free
-  end
-end
-
-shared_examples_for "a free point" do
-
-  it "should not be bound" do
-    @set.should_not be_bound
-  end
-
-  it "should be free" do
-    @set.should be_free
-  end
-end
-
-shared_examples_for "an identified object" do
-
-  it "should have an id" do
-    @set.variable_id.should_not be_nil
   end
 end
 

@@ -1,3 +1,0 @@
-class PointOnLine < SymbolicPoint
-  
-end
