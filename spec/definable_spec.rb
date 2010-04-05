@@ -2,11 +2,12 @@ require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
 describe Definable do
   before(:each) do
-    @class = Class.new
-    @class.send :include, Definable
-    @class.definition [Point, Point] => Midpoint
-    @class.definition [Point, [Line, :parallel]] => ParallelLine
-    @class.definition [Point, [Line, :perpendicular]] => PerpendicularLine
+    @class = Class.new do
+      include Definable
+      definition [Point, Point] => Midpoint
+      definition [Point, [Line, :parallel]] => ParallelLine
+      definition [Point, [Line, :perpendicular]] => PerpendicularLine
+    end
     @definable = @class.new
     [@class, @definable].each do |var|
       def var.definitions
@@ -20,71 +21,107 @@ describe Definable do
     ParallelLine.expected_arguments.should_not be_empty
   end
 
-  it "should extend Definable::ClassMethods when including Definable" do
-    (class << @class; self; end).should include(Definable::ClassMethods)
+  context "when including Definable" do
+    it "should extend Definable::ClassMethods" do
+      @class.should extend(Definable::ClassMethods)
+    end
+
+    it "should force the target to include Constructable" do
+      Midpoint.should include(Definable::Constructable)
+    end 
+
+    context "with definitions" do
+      subject{@definable.definitions}
+
+      specify{ should_not be_nil}
+      specify{ should_not be_equal(@class.definitions)} 
+    end
   end
 
-  it "should have an independent set of definitions" do
-    @definable.definitions.should_not be_nil
-    @definable.definitions.should_not be_equal(@class.definitions)
-  end
+  context "when adding an object" do
+    
+    it "should call add in all definitions" do
+      point = Point.new
+      @definable.definitions.each{|d| d.should_receive(:add).with(point)}
+      @definable.add_object point
+    end
 
-  it "should alias add_object method if it exists" do
-    obj = Class.new do
-            def add_object(obj)
-              obj
-            end
+    context "completing a definition" do
 
-            include Definable
-          end.new
-    obj.should be_respond_to(:add_object_not_definable)
-  end
+      it "should call completed_by" do
+        @definable.should_receive(:completed_by).with(@definable.definitions[0])
+        @definable.add_object Point.new
+        @definable.add_object Class.new(Point).new
+      end
+    end
 
-  it "should call add in all definitions" do
-    point = Point.new
-    @definable.definitions.each{|d| d.should_receive(:add).with(point)}
-    @definable.add_object point
-  end
+    context "when object is actually added" do
 
-  it "should call completed_by when one definition gets complete" do
-    @definable.should_receive(:completed_by).with(@definable.definitions[0])
-    @definable.add_object Point.new
-    @definable.add_object Class.new(Point).new
-  end
+      before(:each) do
+        @p = Point.new
+        @definable.add_object @p
+      end
+      
+      it "should add added object to dependencies" do
+        @definable.object_dependencies.should include(@p)
+      end
 
-  it "should add added object to dependencies if it is added" do
-    point = Point.new
-    @definable.add_object point
-    @definable.object_dependencies.should include(point)
-    point.dependant_objects.should include(@definable)
-  end
+      it "should add itself to dependant objects" do
+        @p.dependant_objects.should include(@definable)
+      end
+    end
 
-  it "should not add added object to dependencies if it is not added" do
-    obj = Class.new.new
-    @definable.add_object obj
-    @definable.object_dependencies.should_not include(obj)
-    lambda{obj.dependant_objects}.should raise_error
-  end
+    context "when object is not actually added" do
 
-  it "should get an internal object when a definition is completed" do
-    @definable.add_object Class.new(Point).new
-    @definable.add_object Class.new(Point).new
-    @definable.instance_variable_get(:@internal_object).should be_a(Midpoint)
-  end
+      before(:each) do
+        @o = Class.new.new
+        @definable.add_object @o
+      end
+      
+      it "should not add added object to dependencies" do
+        @definable.object_dependencies.should_not include(@o)
+      end
 
-  it "should get the proper internal object when a definition is completed" do
-    @definable.add_object Class.new(Point).new
-    @definable.add_object [Class.new(Line).new, :parallel]
-    @definable.instance_variable_get(:@internal_object).should be_a(ParallelLine)
-  end
+      it "should not be in the object dependant_objects" do
+        lambda{
+          @o.dependant_objects.should_not include(@definable)
+        }.should raise_error
+      end
 
-  it "should force the target to include Constructable" do
-    Midpoint.should include(Definable::Constructable)
-  end
+      context "when added object responds to add_object" do
+        it "should call add_object in the parameter" do
+          @definable.should_receive(:add_object).once.with(@definable)
+          @definable.add_object @definable
+        end
+      end
 
-  it "should call add_object in the parameter if there is no definition" do
-    @definable.should_receive(:add_object).once.with(@definable)
-    @definable.add_object @definable
+      context "when added object does not responds to add_object" do
+        it "should not call add_object in the parameter" do
+          p = Class.new.new
+          p.should_receive(:respond_to?).with(:add_object).and_return(false)
+          p.should_not_receive(:add_object)
+          @definable.add_object p
+        end
+      end
+    end
+
+    context "when a definition is complete" do
+
+      before(:each) do
+        @definable.add_object Class.new(Point).new
+        @definable.add_object Class.new(Point).new
+        def @definable.internal_object
+          @internal_object
+        end
+      end
+      
+      it "should get an internal object" do
+        @definable.internal_object.should_not be_nil
+      end
+
+      it "should get an internal object of the proper class" do
+        @definable.internal_object.should be_a(Midpoint)
+      end
+    end
   end
 end
-

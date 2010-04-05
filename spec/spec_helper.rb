@@ -26,9 +26,31 @@ Spec::Matchers.define :contain do |value|
   end
 end
 
+Spec::Matchers.define :extend do |value|
+  match do |container|
+    container.extend?(value)
+  end
+
+  failure_message_for_should do |container|
+    "expected #{container} to extend #{value}"
+  end
+
+  failure_message_for_should_not do |container|
+    "expected #{container} not to extend #{value}"
+  end
+
+  description do
+    "expect a class extending #{value}"
+  end
+end
+
 class Object
   def vector?
     self.is_a?(Array) && self.size == 3
+  end
+
+  def extend?(mod)
+    (class << self; self; end).include? mod
   end
 end
 
