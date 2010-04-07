@@ -81,13 +81,13 @@ module Definable
 end
 
 # Setting up.
-ROOT_DIR= File.join(File.dirname(__FILE__), 'definable')
 
-require File.join(ROOT_DIR, 'helpers', 'array.rb')
+
+require 'definable/helpers/array.rb'
 
 module Definable
-  
+
   #autoloads
-  autoload :Constructable, File.join(ROOT_DIR, 'constructable.rb')
-  autoload :Definition, File.join(ROOT_DIR, 'definition.rb')
+  autoload :Constructable, File.join(File.dirname(__FILE__), 'definable', 'constructable.rb')
+  autoload :Definition, File.join(File.dirname(__FILE__), 'definable', 'definition.rb')
 end
