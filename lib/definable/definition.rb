@@ -78,7 +78,7 @@ module Definable
     def coerceable?(object, arg)
       (arg.is_a?(Module) && object.is_a?(arg)) ||
         (arg.is_a?(Array) && object.is_a?(Array) && arg[0].is_a?(Module) &&
-           arg[1] == object[1])
+           object[0].is_a?(arg[0]) && arg[1] == object[1])
     end
 
     def get_actual_object(object)
