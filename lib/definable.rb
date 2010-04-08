@@ -82,7 +82,7 @@ end
 
 # Setting up.
 
-
+$: << File.dirname(__FILE__)
 require 'definable/helpers/array.rb'
 
 module Definable
