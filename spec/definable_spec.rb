@@ -128,7 +128,7 @@ describe Definable do
 
   context "when adding a hook" do
 
-    describe "#before_creating" do
+    describe "#after_creating" do
 
       subject{ @class }
 
@@ -159,6 +159,43 @@ describe Definable do
         @class.after_creating do |master, slave|
           master.should be_equal(@definable)
           slave.should be_equal(master.instance_variable_get(:@internal_object))
+        end
+        @definable.add_object Point.new
+        @definable.add_object Point.new
+      end
+    end
+
+    describe "#before_creating" do
+
+      subject{ @class }
+
+      it { should respond_to(:before_creating) }
+
+      it "should receive a block" do
+        lambda{
+          @class.before_creating{|x| "just a block"}
+        }.should_not raise_error
+      end
+
+      it "should add a block to after_creating_hooks" do
+        lambda{
+          @class.before_creating{|x| "just a block"}
+        }.should change{@class.before_creating_hooks.size}.by(1)
+      end
+
+      it "should execute all the blocks after creating the object" do
+        @class.before_creating do |master, slave|
+          master.assertion = true
+        end
+        @definable.add_object Point.new
+        @definable.add_object Point.new
+        @definable.assertion.should == true
+      end
+
+      it "should call the blocks with the metaobject and the new object" do
+        @class.before_creating do |master, slave|
+          master.should be_equal(@definable)
+          slave.should be_a(Definable::Definition)
         end
         @definable.add_object Point.new
         @definable.add_object Point.new

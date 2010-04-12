@@ -40,6 +40,7 @@ module Definable
   def completed_by(definition)
     unless @proper_definition
       @proper_definition = definition
+      call_before_creating_hooks(self, @proper_definition)
       @internal_object = @proper_definition.generate
       call_after_creating_hooks(self, @internal_object)
     end
@@ -49,6 +50,12 @@ module Definable
   def call_after_creating_hooks(master, slave)
     self.class.after_creating_hooks.each do |b|
       b.call(master,slave)
+    end
+  end
+  
+  def call_before_creating_hooks(master, definition)
+    self.class.before_creating_hooks.each do |b|
+      b.call(master,definition)
     end
   end
   
@@ -90,8 +97,16 @@ module Definable
       after_creating_hooks << block
     end
 
+    def before_creating(&block)
+      before_creating_hooks << block
+    end
+
     def after_creating_hooks
       @after_creating_hooks ||= []
+    end
+
+    def before_creating_hooks
+      @before_creating_hooks ||= []
     end
   end
 end
