@@ -41,9 +41,17 @@ module Definable
     unless @proper_definition
       @proper_definition = definition
       @internal_object = @proper_definition.generate
+      call_after_creating_hooks(self, @internal_object)
     end
   end
-    
+
+  protected
+  def call_after_creating_hooks(master, slave)
+    self.class.after_creating_hooks.each do |b|
+      b.call(master,slave)
+    end
+  end
+  
   module ClassMethods
 
     def definition(args)
@@ -76,6 +84,14 @@ module Definable
           end
         end
       end     
+    end
+
+    def after_creating(&block)
+      after_creating_hooks << block
+    end
+
+    def after_creating_hooks
+      @after_creating_hooks ||= []
     end
   end
 end

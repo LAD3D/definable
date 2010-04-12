@@ -4,6 +4,7 @@ describe Definable do
   before(:each) do
     @class = Class.new do
       include Definable
+      attr_accessor :assertion
       definition [Point, Point] => Midpoint
       definition [Point, [Line, :parallel]] => ParallelLine
       definition [Point, [Line, :perpendicular]] => PerpendicularLine
@@ -121,6 +122,46 @@ describe Definable do
 
       it "should get an internal object of the proper class" do
         @definable.internal_object.should be_a(Midpoint)
+      end
+    end
+  end
+
+  context "when adding a hook" do
+
+    describe "#before_creating" do
+
+      subject{ @class }
+
+      it { should respond_to(:after_creating) }
+
+      it "should receive a block" do
+        lambda{
+          @class.after_creating{|x| "just a block"}
+        }.should_not raise_error
+      end
+
+      it "should add a block to after_creating_hooks" do
+        lambda{
+          @class.after_creating{|x| "just a block"}
+        }.should change{@class.after_creating_hooks.size}.by(1)
+      end
+
+      it "should execute all the blocks after creating the object" do
+        @class.after_creating do |master, slave|
+          master.assertion = true
+        end
+        @definable.add_object Point.new
+        @definable.add_object Point.new
+        @definable.assertion.should == true
+      end
+
+      it "should call the blocks with the metaobject and the new object" do
+        @class.after_creating do |master, slave|
+          master.should be_equal(@definable)
+          slave.should be_equal(master.instance_variable_get(:@internal_object))
+        end
+        @definable.add_object Point.new
+        @definable.add_object Point.new
       end
     end
   end
