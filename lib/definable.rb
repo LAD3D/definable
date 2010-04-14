@@ -43,6 +43,7 @@ module Definable
       call_before_creating_hooks(self, @proper_definition)
       @internal_object = @proper_definition.generate
       call_after_creating_hooks(self, @internal_object)
+      @internal_object
     end
   end
 
