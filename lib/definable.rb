@@ -15,7 +15,12 @@ module Definable
   end
 
   def add_object obj, internal_call = false
-    if @definitions.nil? || @definitions.map{|definition| definition.add(obj)}.any?{|x| !x.nil? }
+    gd = @definitions.find_all{|d| d.accept?(obj)}
+    if !gd.empty?
+      gd.map{|d| d.dup(true)}.each do |nd|
+        @definitions << nd
+        nd.add obj
+      end
       actual_object = (obj.is_a?(Array) ? obj[0] : obj)
       object_dependencies << actual_object
       actual_object.dependant_objects << self if actual_object.respond_to? :dependant_objects

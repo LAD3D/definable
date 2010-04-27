@@ -4,6 +4,7 @@ module Definable
 
     def initialize(args, klazz, tags=[])
       @args_klazz, @result_klazz = args, klazz
+      @arguments = @args_klazz.dup
       @tags = (tags.is_a?(Array)) ? tags : [tags]
       unless klazz.ancestors.include?(Constructable)
         klazz.send :include, Constructable
@@ -20,8 +21,13 @@ module Definable
       @args_klazz.empty?
     end
 
-    def dup
-      Definition.new(@args_klazz.dup, @result_klazz)
+    def dup(args_and_owner_dup=false)
+      nd = Definition.new(@arguments.dup, @result_klazz)
+      if args_and_owner_dup
+        @args.each{|a| nd.add a}
+        nd.for_object(@owner)
+      end
+      nd
     end
       
     def for_object(obj)
@@ -33,6 +39,10 @@ module Definable
       if complete?
         @generated ||= @result_klazz.new(*@args)
       end
+    end
+
+    def accept?(object)
+      @args_klazz.any?{|arg| coerceable?(object,arg)}
     end
 
     class << self

@@ -64,6 +64,14 @@ class String
   end
 end
 
+module Definable
+  class Definition
+    def owner
+      @owner
+    end
+  end
+end
+
 class Point
   include Definable
   def initialize(*args);end

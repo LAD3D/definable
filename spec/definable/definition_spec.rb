@@ -11,7 +11,7 @@ module Definable
       @ready_params = classes.map(&:new).zip(tags)
       @params = classes.zip(tags)
                       
-      @definition = Definable::Definition.new(@params, @result_class, [:parallel, :normal])
+      @definition = Definable::Definition.new(@params, @result_class)
       @owner =  Class.new do
                   include Definable
                 end.new
@@ -110,6 +110,21 @@ module Definable
       it "should accept a class plus a tag" do
         Definition.send(:can_be_an_arg?, [@result_class, :tag]).should == true
         Definition.send(:can_be_an_arg?, [Class.new, :tag]).should == true
+      end
+    end
+
+    describe "#dup" do
+
+      before(:each) do
+        @dup = @definition.dup(true)
+      end
+      
+      it "should not have a nil owner" do
+        @dup.owner.should_not be_nil
+      end
+      
+      it "should have the same owner" do
+        @dup.owner.should equal(@definition.owner)
       end
     end
 

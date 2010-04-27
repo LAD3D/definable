@@ -1,6 +1,7 @@
 require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
 describe Definable do
+  
   before(:each) do
     @class = Class.new do
       include Definable
@@ -41,16 +42,10 @@ describe Definable do
 
   context "when adding an object" do
     
-    it "should call add in all definitions" do
-      point = Point.new
-      @definable.definitions.each{|d| d.should_receive(:add).with(point)}
-      @definable.add_object point
-    end
-
     context "completing a definition" do
 
       it "should call completed_by" do
-        @definable.should_receive(:completed_by).with(@definable.definitions[0])
+        @definable.should_receive(:completed_by)
         @definable.add_object Point.new
         @definable.add_object Class.new(Point).new
       end
@@ -60,7 +55,12 @@ describe Definable do
 
       before(:each) do
         @p = Point.new
+        @number_of_definitions = @definable.definitions.size
         @definable.add_object @p
+      end
+
+      it "should add a new definition" do
+        @definable.definitions.size.should_not == @number_of_definitions
       end
       
       it "should add added object to dependencies" do
