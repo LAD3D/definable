@@ -2,32 +2,49 @@ module Definable
   
   class Definition
 
-    def initialize(args, klazz, tags=[])
-      @args_klazz, @result_klazz = args, klazz
-      @arguments = @args_klazz.dup
-      @tags = (tags.is_a?(Array)) ? tags : [tags]
+    attr_accessor :result_class
+    attr_reader :owner
+
+    alias :result_klazz :result_class
+    
+    # Arguments are stored in an array of 2-arrays, whose
+    # first element is the expected argument, and the second
+    # the current argument assigned (nil if none).
+    
+    def initialize(args, klazz)
+      self.result_class = klazz
+      self.generic_args= args
       unless klazz.ancestors.include?(Constructable)
         klazz.send :include, Constructable
-        klazz.expected_arguments = @args_klazz
+        klazz.expected_arguments = generic_args
       end
-      @args = []
     end
-
+    
     def add(object)
       add_object(object) unless complete?
     end
 
+    # Arguments already passed.
+    def arguments
+      @arguments.map(&:last).compact
+    end
+
     def complete?
-      @args_klazz.empty?
+      expected_args.empty? # && every arg is complete
     end
 
     def dup(args_and_owner_dup=false)
-      nd = Definition.new(@arguments.dup, @result_klazz)
+      nd = Definition.new(generic_args.dup, result_klazz)
       if args_and_owner_dup
-        @args.each{|a| nd.add a}
-        nd.for_object(@owner)
+        arguments.each{|a| nd.add a}
+        nd.for_object(owner)
       end
       nd
+    end
+
+    # Arguments still not passed
+    def expected_args
+      @arguments.select{|a| a[1].nil?}.map(&:first)
     end
       
     def for_object(obj)
@@ -37,12 +54,21 @@ module Definable
 
     def generate
       if complete?
-        @generated ||= @result_klazz.new(*@args)
+        @generated ||= result_klazz.new(*arguments)
       end
     end
 
+    # The whole collection of expected args.
+    def generic_args
+      @arguments.map &:first
+    end
+    
+    def generic_args=(args)
+      @arguments = args.zip([nil]*args.size)
+    end
+    
     def accept?(object)
-      @args_klazz.any?{|arg| coerceable?(object,arg)}
+      expected_args.any?{|arg| coerceable?(object,arg)}
     end
 
     class << self
@@ -76,11 +102,18 @@ module Definable
 
     private
 
+    # Adds the arg to the first feasible position.
+    def add_arg(obj)
+      idx = @arguments.index do |generic, actual|
+        actual.nil? && coerceable?(obj, generic)
+      end
+      @arguments[idx][1]=obj
+    end  
+    
     def add_object(object)
-      if @args_klazz.any? {|x| coerceable?(object,x)}
-        @args << object
-        @args_klazz.delete_first {|x| coerceable?(object, x)}
-        @owner.completed_by(self) if complete?
+      if expected_args.any? {|x| coerceable?(object,x)}
+        add_arg(object)
+        owner.completed_by(self) if complete?
         get_actual_object(object)
       end
     end

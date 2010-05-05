@@ -8,7 +8,11 @@ module Definable
       alias_method :add_object_not_definable, :add_object if method_defined? :add_object
 
       define_method :initialize do |*args|
-        initialize_without_definition *args
+        # Somehow, this started raising a SystemStackError
+        unless @already_initialized
+          @already_initialized = true
+          initialize_without_definition *args
+        end
         @definitions = self.class.definitions(self)
       end
     end
@@ -17,7 +21,7 @@ module Definable
   def add_object obj, internal_call = false
     gd = @definitions.find_all{|d| d.accept?(obj)}
     if !gd.empty?
-      gd.map{|d| d.dup(true)}.each do |nd|
+      gd.map{|d| d.dup(true)}.tap{|x| puts "soy nil!" if x.nil?}.each do |nd|
         @definitions << nd
         nd.add obj
       end
@@ -48,10 +52,15 @@ module Definable
       call_before_creating_hooks(self, @proper_definition)
       @internal_object = @proper_definition.generate
       call_after_creating_hooks(self, @internal_object)
+      (@dependant_objects ||= []).each &:complete_ping
       @internal_object
     end
   end
 
+  def complete_ping
+    @definitions.each
+  end
+  
   protected
   def call_after_creating_hooks(master, slave)
     self.class.after_creating_hooks.each do |b|

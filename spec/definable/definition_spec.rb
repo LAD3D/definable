@@ -21,7 +21,7 @@ module Definable
     it "should not accept an expected class as parameter" do
       lambda{
         @definition.add @params[0]
-      }.should_not change{@definition.instance_variable_get("@args").size}
+      }.should_not change{@definition.arguments.size}
     end
 
     context "when adding an object" do
@@ -38,7 +38,7 @@ module Definable
           @definition.should be_complete
         end
       end
-
+      
       it "should call complete? when adding an object" do
         @definition.should_receive(:complete?).at_least(1).and_return(false)
         @definition.add @ready_params[1]
@@ -66,7 +66,7 @@ module Definable
         it "should not add an object even if it is in the definition" do
           lambda{
             @definition.add @ready_params[0]
-          }.should_not change{@definition.instance_variable_get("@args").size}
+          }.should_not change{@definition.expected_args.size}
         end
       end
     end
@@ -85,7 +85,7 @@ module Definable
         it "should add an object if it is in the definition" do
           lambda{
             @definition.add @ready_params[0]
-          }.should change{@definition.instance_variable_get("@args").size}.by(1)
+          }.should change{@definition.expected_args.size}.by(-1)
         end
         
         it "should call :add_object if it is not complete" do
@@ -117,6 +117,11 @@ module Definable
 
       before(:each) do
         @dup = @definition.dup(true)
+      end
+
+      
+      it "should conserve the number of remaining arguments" do
+        @dup.expected_args.size.should == @definition.expected_args.size
       end
       
       it "should not have a nil owner" do
