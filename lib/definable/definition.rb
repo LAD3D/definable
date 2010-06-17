@@ -30,7 +30,10 @@ module Definable
     end
 
     def complete?
-      expected_args.empty? # && every arg is complete
+      expected_args.empty? &&
+        arguments.map{|x| (x.is_a?(Array)) ? x.first : x}. # Get the actual object
+        select{|x| x.respond_to? :complete?}. # Only care about objects that respond to complete?
+        all?(&:complete?)
     end
 
     def dup(args_and_owner_dup=false)

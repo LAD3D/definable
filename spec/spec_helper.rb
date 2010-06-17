@@ -74,7 +74,9 @@ end
 
 class Point
   include Definable
-  def initialize(*args);end
+  def initialize(*args);@complete=false;end
+  def complete?; @complete; end
+  def complete; @complete=true; self; end
 end
 class Midpoint < Point
   def initialize(*args);end

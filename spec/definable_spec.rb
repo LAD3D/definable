@@ -46,8 +46,8 @@ describe Definable do
 
       it "should call completed_by" do
         @definable.should_receive(:completed_by)
-        @definable.add_object Point.new
-        @definable.add_object Class.new(Point).new
+        @definable.add_object Point.new.complete
+        @definable.add_object Class.new(Point).new.complete
       end
     end
 
@@ -109,8 +109,8 @@ describe Definable do
     context "when a definition is complete" do
 
       before(:each) do
-        @definable.add_object Class.new(Point).new
-        @definable.add_object Class.new(Point).new
+        @definable.add_object Class.new(Point).new.complete
+        @definable.add_object Class.new(Point).new.complete
         def @definable.internal_object
           @internal_object
         end
@@ -150,8 +150,8 @@ describe Definable do
         @class.after_creating do |master, slave|
           master.assertion = true
         end
-        @definable.add_object Point.new
-        @definable.add_object Point.new
+        @definable.add_object Point.new.complete
+        @definable.add_object Point.new.complete
         @definable.assertion.should == true
       end
 
@@ -187,8 +187,8 @@ describe Definable do
         @class.before_creating do |master, slave|
           master.assertion = true
         end
-        @definable.add_object Point.new
-        @definable.add_object Point.new
+        @definable.add_object Point.new.complete
+        @definable.add_object Point.new.complete
         @definable.assertion.should == true
       end
 
