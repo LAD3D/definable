@@ -21,7 +21,7 @@ module Definable
   def add_object obj, internal_call = false
     gd = @definitions.find_all{|d| d.accept?(obj)}
     if !gd.empty?
-      gd.map{|d| d.dup(true)}.tap{|x| puts "soy nil!" if x.nil?}.each do |nd|
+      gd.map{|d| d.dup(true)}.each do |nd|
         @definitions << nd
         nd.add obj
       end
@@ -52,13 +52,13 @@ module Definable
       call_before_creating_hooks(self, @proper_definition)
       @internal_object = @proper_definition.generate
       call_after_creating_hooks(self, @internal_object)
-      (@dependant_objects ||= []).each &:complete_ping
+      dependant_objects.each &:complete_ping
       @internal_object
     end
   end
 
   def complete_ping
-    @definitions.each
+    @definitions.each &:check_completeness
   end
   
   protected
