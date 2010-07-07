@@ -29,6 +29,10 @@ module Definable
       @arguments.map(&:last).compact
     end
 
+    def check_completeness
+      owner.completed_by(self) if complete?
+    end
+    
     def complete?
       expected_args.empty? &&
         arguments.map{|x| (x.is_a?(Array)) ? x.first : x}. # Get the actual object
@@ -116,7 +120,7 @@ module Definable
     def add_object(object)
       if expected_args.any? {|x| coerceable?(object,x)}
         add_arg(object)
-        owner.completed_by(self) if complete?
+        check_completeness
         get_actual_object(object)
       end
     end
